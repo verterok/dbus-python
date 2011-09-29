@@ -259,7 +259,8 @@ static void BaseMainLoop_dispatch(BaseMainLoop *self) {
     } else if (s == DBUS_DISPATCH_NEED_MEMORY) { 
         printf("  status: NEED MEMORY\n");
     }
-    /*while (s == DBUS_DISPATCH_DATA_REMAINS) {
+    // XXX: Should we loop or just do one dispatch?
+    while (s == DBUS_DISPATCH_DATA_REMAINS) {
         s = dbus_connection_dispatch(self->connection);
         if(s == DBUS_DISPATCH_DATA_REMAINS) {
             printf("  status: DATA REMAINS\n");
@@ -268,7 +269,7 @@ static void BaseMainLoop_dispatch(BaseMainLoop *self) {
         } else if (s == DBUS_DISPATCH_NEED_MEMORY) { 
             printf("  status: NEED MEMORY\n");
         }
-    }*/
+    }
     Py_END_ALLOW_THREADS
     printf("** C ** dispatch -> done\n");
 }
