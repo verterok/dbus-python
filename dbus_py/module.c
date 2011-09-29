@@ -568,7 +568,7 @@ static PyObject * PyDBusWatch_New(DBusWatch *watch) {
         self->readable = readable;
         Py_INCREF(writable);
         self->writable = writable;
-        /Py_INCREF(enabled);
+        Py_INCREF(enabled);
         self->enabled = enabled;
     }
     return self;
