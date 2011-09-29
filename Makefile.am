@@ -5,7 +5,7 @@ ACLOCAL_AMFLAGS = -I m4
 
 # the api, doc, include subdirs don't need their own Makefile.am
 # the dbus subdir is handled with non-recursive make because of #12741
-SUBDIRS = _dbus_bindings _dbus_glib_bindings examples m4 test tools .
+SUBDIRS = _dbus_bindings _dbus_glib_bindings dbus_py examples m4 test tools .
 
 CLEANFILES =
 EXTRA_DIST = \
@@ -114,12 +114,15 @@ _dbus_bindings/_dbus_bindings.la:
 	$(MAKE) -C _dbus_bindings
 _dbus_glib_bindings/_dbus_glib_bindings.la:
 	$(MAKE) -C _dbus_glib_bindings
+dbus_py/_dbus_py.la:
+	$(MAKE) -C dbus_py
 
-APIDOC_PYTHONPATH = $(abs_top_srcdir):$(abs_top_builddir)/_dbus_bindings/.libs:$(abs_top_builddir)/_dbus_glib_bindings/.libs
+APIDOC_PYTHONPATH = $(abs_top_srcdir):$(abs_top_builddir)/_dbus_bindings/.libs:$(abs_top_builddir)/_dbus_glib_bindings/.libs:$(abs_top_builddir)/dbus_py/.libs
 
 api api/index.html: $(nobase_python_PYTHON) \
 		    _dbus_bindings/_dbus_bindings.la \
-		    _dbus_glib_bindings/_dbus_glib_bindings.la
+		    _dbus_glib_bindings/_dbus_glib_bindings.la \
+		    dbus_py/_dbus_py.la
 	rm -rf api
 	mkdir api
 	cd $(abs_top_srcdir) && \
