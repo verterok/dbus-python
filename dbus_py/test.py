@@ -16,28 +16,17 @@ class DBusReader(FileDescriptor):
     def writeSomeData(self, data):
         print "writeSomeData"
         if self.watch.enabled:
-            #self.reactor.callInThread(self.watch.handle_watch)
-            #self.reactor.callInThread(self.loop.dispatch)
-            def work():
-                self.watch.handle_watch()
-                #self.loop.dispatch()
-            #self.reactor.callInThread(work)
-            work()
+            #self.loop.dispatch()
+            self.watch.handle_watch()
 
     def doRead(self):
         if self.watch.enabled:
             print "doRead", self.watch, ' - ', threading.currentThread()
-            #self.watch.handle_watch()
-            #self.loop.dispatch()
-            #self.reactor.callInThread(self.watch.handle_watch)
-            def work():
-                print "watch.handle_watch"
-                self.watch.handle_watch()
-                print "dispatch"
-                self.loop.dispatch()
-                print "dispatch done!"
-            #self.reactor.callInThread(work)
-            work()
+            print "watch.handle_watch"
+            self.watch.handle_watch()
+            print "dispatch"
+            self.loop.dispatch()
+            print "dispatch done!"
         else:
             print "doRead, watch disabled", self.watch
 
@@ -61,10 +50,8 @@ class MyLoop(_dbus_py.BaseMainLoop):
             reader = DBusReader(watch, self)
             self.watches[watch] = reader
             if watch.readable:
-                #self.reactor.callFromThread(self.reactor.addReader, reader)
                 self.reactor.addReader(reader)
             if watch.writable:
-                #self.reactor.callFromThread(self.reactor.addWriter, reader)
                 self.reactor.addWriter(reader)
 
     def remove_watch(self, watch):
@@ -72,12 +59,10 @@ class MyLoop(_dbus_py.BaseMainLoop):
         reader = self.watches.pop(watch, None)
         if reader is not None:
             if watch.readable:
-                #self.reactor.callFromThread(self.reactor.removeReader, reader)
                 print "   removing reader"
                 self.reactor.removeReader(reader)
             if watch.writable:
                 print "   removing writer"
-                #self.reactor.callFromThread(self.reactor.removeWriter, reader)
                 self.reactor.removeWriter(reader)
 
     def toggle_watch(self, watch):
@@ -86,16 +71,11 @@ class MyLoop(_dbus_py.BaseMainLoop):
     def add_timeout(self, timeout):
         print "*** python *** add_timeout - ", timeout, " - ", threading.currentThread()
         self.timeouts[timeout] = None
-        def handler():
-            # TODO
-            print "   add the callLater", timeout.interval
-            #delayed_call = self.reactor.callLater(timeout.interval,
-            #                 self.reactor.callInThread, timeout.handle_timeout)
-            delayed_call = self.reactor.callLater(timeout.interval,
-                             timeout.handle_timeout)
-            self.timeouts[timeout] = delayed_call
-        #self.reactor.callFromThread(handler)
-        handler()
+        # TODO
+        print "   add the callLater", timeout.interval
+        delayed_call = self.reactor.callLater(timeout.interval,
+                         timeout.handle_timeout)
+        self.timeouts[timeout] = delayed_call
 
     def remove_timeout(self, timeout):
         print "*** python *** remove_timeout - ", timeout, " - ", threading.currentThread()
@@ -110,8 +90,10 @@ class MyLoop(_dbus_py.BaseMainLoop):
 
     def wakeup_main(self):
         print "*** python *** - wakeup_main", ' - ', threading.currentThread()
-        #self.reactor.wakeUp
+        self.reactor.wakeUp()
 
+import gc
+gc.set_debug(gc.DEBUG_LEAK)
 
 def main():
     l = MyLoop(set_as_default=True)
@@ -120,6 +102,7 @@ def main():
     obj = s.get_object('com.ubuntuone.SyncDaemon', '/status', )
     print obj.current_status()
     def show_status(*a):
+        gc.collect()
         print "---------- Status Changed:", a
     s.add_signal_receiver(show_status, signal_name='StatusChanged')
     print obj.current_status()
